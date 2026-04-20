@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>IDPS Login</title>
+    <style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #000;
+    color: #fff;
+    font-family: monospace;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* SIDEBAR */
+  #sidebar {
+    width: 200px;
+    background: #111;
+    border-right: 2px solid #c00;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #sidebar h1 {
+    color: #c00;
+    font-size: 16px;
+    text-align: center;
+    padding: 0 10px 20px;
+    border-bottom: 1px solid #c00;
+  }
+
+  #sidebar nav {
+    margin-top: 20px;
+  }
+
+  #sidebar nav a {
+    display: block;
+    padding: 12px 20px;
+    color: #aaa;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+
+  #sidebar nav a:hover,
+  #sidebar nav a.active {
+    color: #fff;
+    border-left: 3px solid #c00;
+    background: #1a0000;
+  }
+
+  /* MAIN */
+  #main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .login-box {
+    width: 300px;
+    padding: 25px;
+    background: #111;
+    border: 1px solid #333;
+    text-align: center;
+  }
+
+  .login-box h2 {
+    color: #c00;
+    margin-bottom: 20px;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    background: #000;
+    border: 1px solid #555;
+    color: white;
+    font-family: monospace;
+  }
+
+  input:focus { border-color: #c00; }
+
+  .btn-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  button {
+    padding: 10px;
+    background: #c00;
+    border: none;
+    color: white;
+    cursor: pointer;
+    flex: 1;
+  }
+
+  button:hover { background: #f00; }
+
+  .create-btn {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    border: 1px solid #c00;
+    color: #c00;
+    text-decoration: none;
+  }
+</style>
+</head>
+<body>
+  <div id="sidebar">
+    <h1>IDPS</h1>
+    <nav>
+      <a href="/" class="active">Login</a>
+      <a href="/register">Register</a>
+    </nav>
+  </div>
+
+  <div id="main">
+    <div class="login-box">
+      <h2>IDPS Login</h2>
+
+      <form action="/login" method="post">
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+
+        <div class="btn-group">
+          <button type="submit">Login</button>
+          <a href="/register" class="create-btn">Create Account</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

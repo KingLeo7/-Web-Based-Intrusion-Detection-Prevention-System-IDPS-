@@ -1,0 +1,40 @@
+PROJECT: Web-Based Intrusion Detection & Prevention System (IDPS)
+
+WEEK 1: Fundamentals + Setup
+
+* Learn HTTP (GET, POST, headers, body)
+* Understand client-server model
+* Basics of SQL Injection, XSS, Brute Force
+* 
+* Create Spring Boot project
+
+* Build simple login page
+
+WEEK 2: WAF (Attack Prevention)
+
+* Implement Filter/Interceptor
+* Add SQL Injection detection (' OR 1=1, SELECT)
+* Add XSS detection (<script>)
+* Block malicious requests
+
+WEEK 3: Brute Force Detection
+
+* Track login attempts (IP, time, status)
+* Detect multiple failed attempts 
+* Block IP after threshold (e.g., 5 attempts)
+* Store data using HashMap or MySQL
+
+WEEK 4: Dashboard + Finalization
+
+* Create dashboard UI
+* Show blocked IPs and attack logs
+* Add risk levels (Low/Medium/High)
+* Test system with attacks
+* Final testing and project completion
+
+FINAL OUTPUT:
+
+* Secure login system
+* Attack detection (SQLi, XSS, Brute Force)
+* IP blocking system
+* Web dashboard showing all activity

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IDPS Dashboard</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #000;
+    color: #fff;
+    font-family: monospace;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* SIDEBAR */
+  #sidebar {
+    width: 200px;
+    background: #111;
+    border-right: 2px solid #c00;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #sidebar h1 {
+    color: #c00;
+    font-size: 16px;
+    text-align: center;
+    padding: 0 10px 20px;
+    border-bottom: 1px solid #c00;
+  }
+
+  #sidebar nav {
+    margin-top: 20px;
+  }
+
+  #sidebar nav a {
+    display: block;
+    padding: 12px 20px;
+    color: #aaa;
+    text-decoration: none;
+    font-size: 14px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+
+  #sidebar nav a:hover,
+  #sidebar nav a.active {
+    color: #fff;
+    border-left: 3px solid #c00;
+    background: #1a0000;
+  }
+
+  /* MAIN */
+  #main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+  }
+
+  /* STATUS BAR */
+  #status-bar {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: #111;
+    border: 1px solid #c00;
+  }
+
+  #threat-level {
+    color: #c00;
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  #system-status { color: #0f0; }
+
+  /* STATS */
+  #stats {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .stat-box {
+    flex: 1;
+    background: #111;
+    border: 1px solid #333;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-box .label {
+    color: #888;
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+
+  .stat-box .value {
+    color: #c00;
+    font-size: 28px;
+    font-weight: bold;
+  }
+
+  /* CARDS */
+  .card {
+    background: #111;
+    border: 1px solid #333;
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    background: #1a0000;
+    border-bottom: 1px solid #c00;
+    padding: 10px 16px;
+    color: #c00;
+    font-size: 14px;
+  }
+
+  .card-body { padding: 16px; }
+
+  /* ANALYZE FORM */
+  .radio-group { margin-bottom: 14px; }
+
+  .radio-group label {
+    display: block;
+    margin: 6px 0;
+    color: #ccc;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .radio-group input[type="radio"] {
+    accent-color: #c00;
+    margin-right: 8px;
+  }
+
+  .radio-group .row-label {
+    color: #888;
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+
+  #url-input {
+    width: 100%;
+    background: #000;
+    border: 1px solid #555;
+    color: #fff;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 13px;
+    margin-bottom: 12px;
+    outline: none;
+  }
+
+  #url-input:focus { border-color: #c00; }
+
+  #analyze-btn {
+    background: #c00;
+    color: #fff;
+    border: none;
+    padding: 10px 24px;
+    font-family: monospace;
+    font-size: 14px;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  #analyze-btn:hover { background: #f00; }
+
+  #result-box {
+    margin-top: 12px;
+    padding: 10px;
+    border: 1px solid #333;
+    font-size: 14px;
+    display: none;
+  }
+
+  #result-box.safe { border-color: #0a0; color: #0f0; }
+  #result-box.danger { border-color: #c00; color: #f44; }
+
+  /* LOGS */
+  .log-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #222;
+    font-size: 13px;
+  }
+
+  .log-item:last-child { border-bottom: none; }
+  .log-url { color: #ccc; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .log-safe { color: #0f0; }
+  .log-attack { color: #f44; }
+
+  /* BLOCKED IPs */
+  .ip-item {
+    padding: 7px 0;
+    border-bottom: 1px solid #222;
+    color: #f44;
+    font-size: 13px;
+  }
+
+  .ip-item:last-child { border-bottom: none; }
+
+  /* SCROLLBAR */
+  #main::-webkit-scrollbar { width: 6px; }
+  #main::-webkit-scrollbar-track { background: #000; }
+  #main::-webkit-scrollbar-thumb { background: #c00; }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <h1>🛡️ IDPS SYSTEM</h1>
+  <nav>
+    <a class="active">📊 Dashboard</a>
+    <a>📜 Attack Logs</a>
+    <a>🚫 Blocked IPs</a>
+    <a>⚙️ Settings</a>
+  </nav>
+</div>
+
+<div id="main">
+
+  <!-- Status Bar -->
+  <div id="status-bar">
+    <span id="threat-level">🔴 Threat Level: HIGH</span>
+    <span id="system-status">● ACTIVE</span>
+  </div>
+
+  <!-- Stats -->
+  <div id="stats">
+    <div class="stat-box">
+      <div class="label">Requests</div>
+      <div class="value" id="stat-requests">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="label">Attacks</div>
+      <div class="value" id="stat-attacks">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="label">Blocked</div>
+      <div class="value" id="stat-blocked">0</div>
+    </div>
+  </div>
+
+  <!-- Analyze -->
+  <div class="card" id="analyze-card">
+    <div class="card-title" onclick="scrollToSection('analyze-card')" style="cursor:pointer;">🔍 Analyze Request</div>
+    <div class="card-body">
+
+      <div class="radio-group">
+        <div class="row-label">Select Check Type:</div>
+        <label><input type="radio" name="check" value="sql" checked> SQL Injection</label>
+        <label><input type="radio" name="check" value="xss"> XSS Attack</label>
+        <label><input type="radio" name="check" value="brute"> Brute Force</label>
+        <label><input type="radio" name="check" value="csrf"> CSRF Attack</label>
+        <label><input type="radio" name="check" value="rfi"> Remote File Inclusion</label>
+        <label><input type="radio" name="check" value="lfi"> Local File Inclusion</label>
+        <label><input type="radio" name="check" value="full"> Full Scan</label>
+      </div>
+
+      <div style="color:#888;font-size:12px;margin-bottom:6px;">Enter URL:</div>
+      <input type="text" id="url-input" placeholder="/login?id=1 OR 1=1">
+
+      <button id="analyze-btn" onclick="analyze()">[ Analyze ]</button>
+
+      <div id="result-box"></div>
+    </div>
+  </div>
+
+  <!-- Logs -->
+  <div class="card" id="logs-card">
+    <div class="card-title" onclick="scrollToSection('logs-card')" style="cursor:pointer;">📜 Attack Logs</div>
+    <div class="card-body" id="logs-list">Loading...</div>
+  </div>
+
+  <!-- Blocked IPs -->
+  <div class="card" id="blocked-card">
+    <div class="card-title" onclick="scrollToSection('blocked-card')" style="cursor:pointer;">🚫 Blocked IPs</div>
+    <div class="card-body" id="blocked-list">Loading...</div>
+  </div>
+
+  <!-- Settings -->
+  <div class="card" id="settings-card">
+    <div class="card-title" onclick="scrollToSection('settings-card')" style="cursor:pointer;">⚙️ Settings</div>
+    <div class="card-body">
+      <button onclick="clearLogs()" style="background:#c00;color:#fff;border:none;padding:8px 16px;margin:4px;cursor:pointer;">Clear All Logs</button>
+      <button onclick="clearBlocked()" style="background:#c00;color:#fff;border:none;padding:8px 16px;margin:4px;cursor:pointer;">Clear Blocked IPs</button>
+      <button onclick="resetStats()" style="background:#c00;color:#fff;border:none;padding:8px 16px;margin:4px;cursor:pointer;">Reset Statistics</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const API = "";
+
+  async function loadData() {
+    try {
+      const res = await fetch(API + "/api/data");
+      const data = await res.json();
+
+      document.getElementById("stat-requests").textContent = data.stats.requests;
+      document.getElementById("stat-attacks").textContent = data.stats.attacks;
+      document.getElementById("stat-blocked").textContent = data.stats.blocked;
+
+      // Logs
+      const logsList = document.getElementById("logs-list");
+      if (data.logs.length === 0) {
+        logsList.innerHTML = '<div style="color:#555">No logs yet.</div>';
+      } else {
+        logsList.innerHTML = data.logs.map(log => `
+          <div class="log-item">
+            <span class="log-url">${escHtml(log.url)}</span>
+            <span class="${log.safe ? 'log-safe' : 'log-attack'}">&nbsp;${escHtml(log.result)}</span>
+          </div>
+        `).join("");
+      }
+
+      // Blocked IPs
+      const blockedList = document.getElementById("blocked-list");
+      if (data.blocked_ips.length === 0) {
+        blockedList.innerHTML = '<div style="color:#555">No blocked IPs.</div>';
+      } else {
+        blockedList.innerHTML = data.blocked_ips.map(ip => `
+          <div class="ip-item">${escHtml(ip)}</div>
+        `).join("");
+      }
+
+    } catch (e) {
+      console.error("Failed to load data:", e);
+    }
+  }
+
+  async function analyze() {
+    const url = document.getElementById("url-input").value.trim();
+    if (!url) return alert("Enter a URL to analyze.");
+
+    const type = document.querySelector('input[name="check"]:checked').value;
+    const resultBox = document.getElementById("result-box");
+
+    resultBox.style.display = "block";
+    resultBox.textContent = "Analyzing...";
+    resultBox.className = "";
+
+    try {
+      const res = await fetch(API + "/api/analyze", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({url, type})
+      });
+      const data = await res.json();
+
+      if (data.safe) {
+        resultBox.className = "safe";
+        resultBox.textContent = "✅ Result: Safe";
+      } else {
+        resultBox.className = "danger";
+        resultBox.textContent = "🔴 Result: " + data.result + " Detected!";
+      }
+
+      loadData(); // refresh stats and logs
+
+    } catch (e) {
+      resultBox.className = "danger";
+      resultBox.textContent = "❌ Error: Cannot connect to server. Is Flask running?";
+    }
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  function scrollToSection(sectionId) {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  async function clearLogs() {
+    if (!confirm("Clear all attack logs?")) return;
+    try {
+      await fetch(API + "/api/clear-logs", {method: "POST"});
+      loadData();
+    } catch (e) {
+      alert("Error clearing logs");
+    }
+  }
+
+  async function clearBlocked() {
+    if (!confirm("Clear all blocked IPs?")) return;
+    try {
+      await fetch(API + "/api/clear-blocked", {method: "POST"});
+      loadData();
+    } catch (e) {
+      alert("Error clearing blocked IPs");
+    }
+  }
+
+  async function resetStats() {
+    if (!confirm("Reset all statistics?")) return;
+    try {
+      await fetch(API + "/api/reset-stats", {method: "POST"});
+      loadData();
+    } catch (e) {
+      alert("Error resetting stats");
+    }
+  }
+
+  // Load on start, refresh every 5 seconds
+  loadData();
+  setInterval(loadData, 5000);
+</script>
+
+</body>
+</html>
